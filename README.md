@@ -1,6 +1,6 @@
 # vmware-mcp-server
-A **Model Context Protocol (MCP) server** that gives Claude direct control over VMware Workstation Pro via its built-in REST API (`vmrest.exe`). Power VMs on and off, take snapshots, query IP addresses, manage networks G현 all from a natural language conversation with Claude.
-> **AI-Generated Project** G현 This server was designed and written entirely by [Claude](https://claude.ai) (Anthropic) during a live conversation. No code was written by hand. See the [Origin Story](#origin-story) below.
+A **Model Context Protocol (MCP) server** that gives Claude direct control over VMware Workstation Pro via its built-in REST API (`vmrest.exe`). Power VMs on and off, take snapshots, query IP addresses, manage networks -- all from a natural language conversation with Claude.
+> **AI-Generated Project** -- This server was designed and written entirely by [Claude](https://claude.ai) (Anthropic) during a live conversation. No code was written by hand. See the [Origin Story](#origin-story) below.
 ---
 ## Features
 - List all registered VMs with their current power state
@@ -23,7 +23,7 @@ Open a terminal and run:
 ```powershell
 vmrest --config
 ```
-Follow the prompts to set a username and password. Note them down G현 you will need them shortly. Then start the API server:
+Follow the prompts to set a username and password. Note them down -- you will need them shortly. Then start the API server:
 ```powershell
 vmrest
 ```
@@ -36,14 +36,14 @@ cd vmware-mcp-server
 npm install
 ```
 ### 3. Set environment variables
-The server reads credentials from environment variables G현 credentials are **never** hardcoded.
+The server reads credentials from environment variables -- credentials are **never** hardcoded.
 ```powershell
 $env:VMREST_USERNAME = "your_vmrest_username"
 $env:VMREST_PASSWORD = "your_vmrest_password"
-# Optional G현 defaults to 8697
+# Optional -- defaults to 8697
 $env:VMREST_PORT     = "8697"
 ```
-To make these permanent, add them via **System Properties G樣 Environment Variables**.
+To make these permanent, add them via **System Properties > Environment Variables**.
 ### 4. Register with Claude Desktop
 Edit `%APPDATA%\Claude\claude_desktop_config.json` and add the following inside `mcpServers`:
 ```json
@@ -58,7 +58,7 @@ Edit `%APPDATA%\Claude\claude_desktop_config.json` and add the following inside 
 }
 ```
 ### 5. Restart Claude Desktop
-Fully quit Claude (system tray G樣 Quit) and relaunch. The `vmware` server will appear in your tools.
+Fully quit Claude (system tray > Quit) and relaunch. The `vmware` server will appear in your tools.
 ---
 ## Available Tools
 | Tool | Description |
@@ -81,16 +81,16 @@ Fully quit Claude (system tray G樣 Quit) and relaunch. The `vmware` server will 
 ---
 ## Getting Inside a VM
 This MCP server controls VMs at the hypervisor level. To execute commands *inside* a guest OS, combine it with:
-- **`vmrun` via PowerShell MCP** G현 works without any network, communicates directly through VMware Tools:
+- **vmrun via PowerShell MCP** -- works without any network, communicates directly through VMware Tools:
   ```powershell
   vmrun -T ws -gu username -gp password runProgramInGuest "path\to\vm.vmx" /bin/bash -c "whoami"
   ```
-- **SSH** G현 for Linux VMs with SSH enabled
-- **WinRM / PowerShell Remoting** G현 for Windows VMs
+- **SSH** -- for Linux VMs with SSH enabled
+- **WinRM / PowerShell Remoting** -- for Windows VMs
 ---
 ## Security Notes
-- Credentials are passed via environment variables only G현 never commit them to source control
-- The vmrest API only listens on `localhost:8697` G현 it is not exposed to the network by default
+- Credentials are passed via environment variables only -- never commit them to source control
+- The vmrest API only listens on `localhost:8697` -- it is not exposed to the network by default
 - Treat your vmrest password like any local service credential
 - The `.gitignore` in this repo explicitly excludes `vmrest.cfg` and `.env` files
 ---
@@ -102,17 +102,23 @@ This MCP server controls VMs at the hypervisor level. To execute commands *insid
 Both packages are MIT licensed, actively maintained, and have zero known vulnerabilities (`npm audit` clean).
 ---
 ## Origin Story
-This project wasn't planned. It came out of a single conversation.
-I was exploring what MCP actually does G현 I had assumed that enabling it gave Claude broad access to my PC, but that turned out to be wrong. Claude explained that MCP is a protocol, not a permission system: each server is a separate connector that exposes only what it is built for.
-That conversation led to a question: could we connect Claude to VMware Workstation? There was no official MCP server for it, and every community project we found targeted enterprise vCenter/ESXi G현 nothing for the desktop product.
-So Claude looked up the VMware Workstation REST API (`vmrest.exe`), walked through setting it up, hit credential and permission issues along the way (including a fun detour through Windows UAC and bcrypt password hashing), and then wrote this MCP server from scratch G현 live, in the same chat, without any prior template.
-By the end of the conversation Claude had powered on a VM, confirmed VMware Tools was running, installed SSH inside the guest, and executed commands inside the VM G현 all driven from natural language.
-This repo is the result of that session. The entire codebase was written by Claude (Anthropic). Not a single line was typed by hand.
+This project wasn't planned.
+I was trying to understand what MCP actually does. I had assumed that enabling it in Claude Desktop gave Claude broad access to my PC -- turns out that's completely wrong. Claude explained that MCP is a protocol, not a permission system. Each server is a separate connector that exposes only what it's explicitly built for. Enabling MCP without installing any servers does absolutely nothing.
+That explanation led to a question: could we connect Claude to VMware Workstation? I had 17 VMs sitting on my machine and no way to control them from Claude. We searched for an existing MCP server -- there wasn't one. Every community project we found targeted enterprise vCenter/ESXi, nothing for the desktop product.
+So we built one.
+Claude researched the VMware Workstation REST API (`vmrest.exe`), which ships built into Workstation Pro but is rarely used. We hit several walls along the way -- Windows UAC blocking system PATH modifications, a bcrypt password hashing rabbit hole trying to configure vmrest non-interactively, the vmrest password policy rejecting credentials silently, and the Claude MCP server running without admin privileges.
+Each problem got solved in the same conversation. By the end, Claude had:
+- Powered on a suspended Ubuntu VM via the REST API
+- Retrieved its IP address through VMware Tools
+- Installed OpenSSH inside the guest using `vmrun` without any network access
+- Executed commands inside the running VM and copied output back to the host
+All of it driven from natural language. No scripts prepared in advance, no prior template.
+This repo is the direct output of that session. The entire codebase was written by Claude (Anthropic). Not a single line was typed by hand.
 ---
 ## Disclaimer
-This project was **entirely designed, architected and written by [Claude](https://claude.ai)**, an AI assistant made by Anthropic. The human contributor directed the goals, provided the environment, and tested the results G현 but wrote no code.
-This is a real-world demonstration of AI-assisted tooling built through conversation.
+This project was **entirely designed, architected and written by [Claude](https://claude.ai)**, an AI assistant made by Anthropic. The human contributor directed the goals, provided the environment, and tested the results -- but wrote no code.
+This is a real-world example of what AI-assisted tooling looks like when built through conversation rather than planned development.
 ---
 ## License
-[MIT](LICENSE) G현 free to use, modify and distribute. See `LICENSE` for full terms.
+[MIT](LICENSE) -- free to use, modify and distribute. See `LICENSE` for full terms.
 Contributions welcome. If you extend this to support vSphere, ESXi, or add new tools, please open a PR.
