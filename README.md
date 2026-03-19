@@ -120,6 +120,16 @@ A real example from the session that created this project: Claude powered on a s
 | WinRM | Windows VMs | WinRM enabled, network connectivity |
 `vmrun` is the recommended starting point - zero network dependencies, works the moment VMware Tools is running.
 ---
+
+> **Windows port proxy required for Docker/VM deployments:**
+> By default vmrest binds to `127.0.0.1` only. To expose it to a VM or Docker container, run these as Administrator on Windows:
+> ```powershell
+> netsh interface portproxy add v4tov4 listenaddress=192.168.244.1 listenport=8697 connectaddress=127.0.0.1 connectport=8697
+> New-NetFirewallRule -DisplayName vmrest-proxy-8697 -Direction Inbound -Protocol TCP -LocalPort 8697 -LocalAddress 192.168.244.1 -Action Allow
+> ```
+> Replace `192.168.244.1` with your VMware NAT adapter IP (Get-NetIPAddress | Where InterfaceAlias -like '*VMware*').
+
+---
 ## Security Notes
 - Credentials are passed via environment variables only - never commit them to source control
 - The vmrest API only listens on `localhost:8697` - not exposed to the network by default
